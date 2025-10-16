@@ -73,15 +73,14 @@ const handleTiktokWebhook = async (req, res) => {
         //   data: data,
         //   status: true,
         // });
+
         const { data } = await axios.post(
           "https://api.plura.ai/v1/lead/sendtoworkflow",
           {
             workflow_id: process.env.PLURA_WORKFLOW_ID,
             record: {
+              ...lead,
               phone: toE164(lead.phone),
-              first_name: lead?.first_name,
-              last_name: lead?.last_name,
-              zipcode: lead?.zipcode,
             },
           },
           {
