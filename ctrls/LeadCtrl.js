@@ -79,8 +79,21 @@ const handleTiktokWebhook = async (req, res) => {
           {
             workflow_id: process.env.PLURA_WORKFLOW_ID,
             record: {
-              ...lead,
+              ad_id: lead.ad_id,
+              age: lead.age,
+              campaign_id: lead.campaign_id,
+              created_at: lead.created_at,
+              credit_score: lead.credit_score,
+              email: lead.email,
+              first_name: lead.first_name,
+              last_name: lead.last_name,
               phone: toE164(lead.phone),
+              homeowner: lead.homeowner,
+              insured: lead.insured,
+              lead_id: lead.lead_id,
+              tcpa_consent: lead.tcpa_consent,
+              vehicles: lead.vehicles,
+              zipcode: lead.zipcode,
             },
           },
           {
