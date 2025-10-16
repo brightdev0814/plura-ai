@@ -7,6 +7,6 @@ router.get("/", function (req, res, next) {
   res.render("index", { title: "Express" });
 });
 
-router.post("/tiktok-webhook", LeadCtrl.validate);
-
+router.post("/tiktok-webhook", LeadCtrl.handleTiktokWebhook);
+router.post("/plura-webhook", LeadCtrl.handlePluraWebhook);
 module.exports = router;

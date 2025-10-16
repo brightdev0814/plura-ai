@@ -1,113 +1,105 @@
 const axios = require("axios");
 const crypto = require("crypto");
 
-const getAnswer = (lead, key) => {
-  return lead.answers.find((a) => a.question_key === key)?.answer;
+const isValidEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
 };
 
-const validateActivePropspect = async (certUrl, lead) => {
-  try {
-    const trustedformCertUrl = certUrl;
-    if (!trustedformCertUrl) {
-      throw {
-        response: {
-          data: "Missing cert URL",
-        },
-      };
-    } else {
-      const certId = trustedformCertUrl.split("/").pop();
-      const email = getAnswer(lead, "email");
-      const phone = getAnswer(lead, "phone");
-      const { data } = await axios.post(
-        `https://cert.trustedform.com/${certId}`,
-        {
-          match_lead: {
-            email: email,
-            phone: phone,
-          },
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Api-Version": "4.0",
-            Authorization:
-              "Basic " +
-              Buffer.from(
-                `vishaal.melwani@adquadrant.com:${process.env.ACTIVE_PROSPECT_API_KEY}`
-              ).toString("base64"),
-          },
-        }
-      );
-
-      return data;
-    }
-  } catch (err) {
-    console.error(
-      "ActiveProspect validation failed:",
-      err.response?.data || err.message
-    );
-    throw err;
-  }
+const isValidPhone = (phone) => {
+  const regex =
+    /^(\+1\s?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})([\s.-]?)?[0-9]{3}([\s.-]?)?[0-9]{4}$/;
+  return regex.test(phone);
 };
 
-const validateNeustar = async (lead) => {
-  try {
-    const firstName = getAnswer(lead, "first_name");
-    const lastName = getAnswer(lead, "last_name");
-    const email = getAnswer(lead, "email");
-    const phone = getAnswer(lead, "phone");
-    const zip = getAnswer(lead, "zip_code");
-    const { data } = await axios.post(
-      `https://api.neustar.biz/validate/lead/phone?phone=${phone}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.NEUSTAR_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return data;
-  } catch (err) {
-    console.error(
-      "Neustar validation failed:",
-      err.response?.data || err.message
-    );
-    throw err;
-  }
+const toE164 = (phone) => {
+  return phone.replace(/\D/g, "");
 };
 
-const validate = async (req, res) => {
+const handleTiktokWebhook = async (req, res) => {
   try {
-    const trustedformCertUrl = req.body.trustedform_cert_url;
-    const lead = req.body.leads.length > 0 ? req.body.leads[0] : null;
-
-    const validateActiveProspectResult = await validateActivePropspect(
-      trustedformCertUrl,
-      lead
-    );
-    if (
-      validateActiveProspectResult.match_lead.result.email_match &&
-      validateActiveProspectResult.match_lead.result.phone_match
-    ) {
-      // await validateNeustar(lead);
-      console.log(
-        "ActivePropspect validation passed:",
-        validateActiveProspectResult
-      );
-      return res.status(200).json({
-        challenge: crypto.randomBytes(16).toString("hex"),
+    // const lead = {
+    //   ad_group_name: "test lead: dummy data for ad group name",
+    //   ad_id: "0",
+    //   ad_name: "test lead: dummy data for ad name",
+    //   age: "35-44",
+    //   campaign_id: "0",
+    //   campaign_name: "test lead: dummy data for campaign name",
+    //   created_at: "2025-10-02 18:48:22",
+    //   credit_score: "Fair (650-699)",
+    //   disclaimer:
+    //     "By checking this box and providing your phone number, you consent to receive marketing calls and texts from Solvable.com and our partners regarding auto insurance quotes, even if your number is on a Do Not Call registry. You understand that consent is not required as a condition of purchase. Message and data rates may apply. You can opt out at any time by replying STOP.",
+    //   email: "vishaal.melwani@adquadrant.com",
+    //   first_name: "Vishaal",
+    //   last_name: "Melwani",
+    //   phone: "+1 702-249-7036",
+    //   homeowner: "Yes",
+    //   insured: "Yes",
+    //   lead_id: "7556696111797518608",
+    //   tcpa_consent: "true",
+    //   vehicles: "2",
+    //   zipcode: "11201",
+    // };
+    const lead = req.body;
+    if (!isValidEmail(lead.email)) {
+      console.log("Invalid email address. Please enter a valid email.");
+      return res.json({
+        status: false,
+        message: "Invalid email address. Please enter a valid email.",
+      });
+    } else if (!isValidPhone(lead.phone)) {
+      console.log("Invalid phone number. Please enter a valid phone number.");
+      return res.json({
+        status: false,
+        message: "Invalid phone number. Please enter a valid phone number.",
       });
     } else {
-      console.error(
-        "ActiveProspect validation failed:",
-        validateActiveProspectResult.match_lead
-      );
-      throw {
-        response: {
-          data: "ActiveProspect validation failed.",
-        },
-      };
+      try {
+        // const { data } = await axios.post(
+        //   "https://api.plura.ai/v1/agent",
+        //   {
+        //     agent: process.env.PLURA_AGENT,
+        //     phone: lead.phone,
+        //     from: process.env.PLURA_PHONE,
+        //     request_data: lead,
+        //   },
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${process.env.PLURA_API_KEY}`,
+        //     },
+        //   }
+        // );
+        // return res.json({
+        //   data: data,
+        //   status: true,
+        // });
+        const { data } = await axios.post(
+          "https://api.plura.ai/v1/lead/sendtoworkflow",
+          {
+            workflow_id: process.env.PLURA_WORKFLOW_ID,
+            record: {
+              phone: toE164(lead.phone),
+              first_name: lead?.first_name,
+              last_name: lead?.last_name,
+              zipcode: lead?.zipcode,
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.PLURA_API_KEY}`,
+            },
+          }
+        );
+        return res.json({
+          data: data,
+          status: true,
+        });
+      } catch (err) {
+        return res.json({
+          status: false,
+          message: err.message,
+        });
+      }
     }
   } catch (err) {
     return res.status(500).json({
@@ -116,6 +108,15 @@ const validate = async (req, res) => {
   }
 };
 
+const handlePluraWebhook = async (req, res) => {
+  console.log(req.body);
+  return res.json({
+    data: req.body,
+    status: true,
+  });
+};
+
 module.exports = {
-  validate,
+  handleTiktokWebhook,
+  handlePluraWebhook,
 };
