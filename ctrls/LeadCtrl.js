@@ -17,29 +17,6 @@ const toE164 = (phone) => {
 
 const handleTiktokWebhook = async (req, res) => {
   try {
-    // const lead = {
-    //   ad_group_name: "test lead: dummy data for ad group name",
-    //   ad_id: "0",
-    //   ad_name: "test lead: dummy data for ad name",
-    //   age: "35-44",
-    //   campaign_id: "0",
-    //   campaign_name: "test lead: dummy data for campaign name",
-    //   created_at: "2025-10-02 18:48:22",
-    //   credit_score: "Fair (650-699)",
-    //   disclaimer:
-    //     "By checking this box and providing your phone number, you consent to receive marketing calls and texts from Solvable.com and our partners regarding auto insurance quotes, even if your number is on a Do Not Call registry. You understand that consent is not required as a condition of purchase. Message and data rates may apply. You can opt out at any time by replying STOP.",
-    //   email: "vishaal.melwani@adquadrant.com",
-    //   first_name: "Vishaal",
-    //   last_name: "Melwani",
-    //   phone: "+1 702-249-7036",
-    //   homeowner: "Yes",
-    //   insured: "Yes",
-    //   lead_id: "7556696111797518608",
-    //   tcpa_consent: "true",
-    //   vehicles: "2",
-    //   zipcode: "11201",
-    // };
-
     const lead = req.body;
     if (!isValidEmail(lead.email)) {
       console.log("Invalid email address. Please enter a valid email.");
@@ -64,6 +41,7 @@ const handleTiktokWebhook = async (req, res) => {
           }
         );
         if (result.status === "failed") {
+          console.log("Phone number already exists");
           return res.json({
             status: false,
             message: "Lead with this phone number already exists.",
@@ -97,13 +75,14 @@ const handleTiktokWebhook = async (req, res) => {
               },
             }
           );
-
+          console.log("Success===>", data);
           return res.json({
             data: data,
             status: true,
           });
         }
       } catch (err) {
+        console.log("Error===>", err);
         return res.json({
           status: false,
           message: err.message,
@@ -111,6 +90,7 @@ const handleTiktokWebhook = async (req, res) => {
       }
     }
   } catch (err) {
+    console.log("Error===>", err);
     return res.status(500).json({
       message: err.message,
     });
