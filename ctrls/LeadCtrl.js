@@ -100,7 +100,6 @@ const handleTiktokWebhook = async (req, res) => {
 const handlePluraWebhookV5 = async (req, res) => {
   try {
     const lead = req.body;
-    console.log(lead);
     if (!isValidPhone(lead.phone)) {
       console.log("Invalid phone number. Please enter a valid phone number.");
       return res.json({
