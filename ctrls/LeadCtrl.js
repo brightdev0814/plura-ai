@@ -1,5 +1,4 @@
 const axios = require("axios");
-const crypto = require("crypto");
 
 const isValidEmail = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,6 +39,7 @@ const handleTiktokWebhook = async (req, res) => {
     //   vehicles: "2",
     //   zipcode: "11201",
     // };
+
     const lead = req.body;
     if (!isValidEmail(lead.email)) {
       console.log("Invalid email address. Please enter a valid email.");
@@ -55,57 +55,54 @@ const handleTiktokWebhook = async (req, res) => {
       });
     } else {
       try {
-        // const { data } = await axios.post(
-        //   "https://api.plura.ai/v1/agent",
-        //   {
-        //     agent: process.env.PLURA_AGENT,
-        //     phone: lead.phone,
-        //     from: process.env.PLURA_PHONE,
-        //     request_data: lead,
-        //   },
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${process.env.PLURA_API_KEY}`,
-        //     },
-        //   }
-        // );
-        // return res.json({
-        //   data: data,
-        //   status: true,
-        // });
-
-        const { data } = await axios.post(
-          "https://api.plura.ai/v1/lead/sendtoworkflow",
-          {
-            workflow_id: process.env.PLURA_WORKFLOW_ID,
-            record: {
-              ad_id: lead.ad_id,
-              age: lead.age,
-              campaign_id: lead.campaign_id,
-              created_at: lead.created_at,
-              credit_score: lead.credit_score,
-              email: lead.email,
-              first_name: lead.first_name,
-              last_name: lead.last_name,
-              phone: toE164(lead.phone),
-              homeowner: lead.homeowner,
-              insured: lead.insured,
-              lead_id: lead.lead_id,
-              tcpa_consent: lead.tcpa_consent,
-              vehicles: lead.vehicles,
-              zipcode: lead.zipcode,
-            },
-          },
+        const { data: result } = await axios.get(
+          `https://api.plura.ai/v1/lead/get?phone=${toE164(lead.phone)}`,
           {
             headers: {
               Authorization: `Bearer ${process.env.PLURA_API_KEY}`,
             },
           }
         );
-        return res.json({
-          data: data,
-          status: true,
-        });
+        if (result.status === "failed") {
+          return res.json({
+            status: false,
+            message: "Lead with this phone number already exists.",
+          });
+        } else {
+          const { data } = await axios.post(
+            "https://api.plura.ai/v1/lead/sendtoworkflow",
+            {
+              workflow_id: process.env.PLURA_WORKFLOW_ID,
+              record: {
+                ad_id: lead?.ad_id,
+                age: lead?.age,
+                campaign_id: lead?.campaign_id,
+                created_at: lead?.created_at,
+                credit_score: lead?.credit_score,
+                email: lead?.email,
+                first_name: lead?.first_name,
+                last_name: lead?.last_name,
+                phone: toE164(lead?.phone),
+                homeowner: lead?.homeowner,
+                insured: lead?.insured,
+                // lead_id: lead?.lead_id,
+                tcpa_consent: lead?.tcpa_consent,
+                vehicles: lead?.vehicles,
+                zip_code: lead?.zipcode,
+              },
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.PLURA_API_KEY}`,
+              },
+            }
+          );
+
+          return res.json({
+            data: data,
+            status: true,
+          });
+        }
       } catch (err) {
         return res.json({
           status: false,
@@ -121,7 +118,6 @@ const handleTiktokWebhook = async (req, res) => {
 };
 
 const handlePluraWebhook = async (req, res) => {
-  console.log(req.body);
   return res.json({
     data: req.body,
     status: true,
