@@ -8,5 +8,6 @@ router.get("/", function (req, res, next) {
 });
 
 router.post("/tiktok-webhook", LeadCtrl.handleTiktokWebhook);
+router.post("/tiktok-webhook-v5", LeadCtrl.handlePluraWebhookV5);
 router.post("/plura-webhook", LeadCtrl.handlePluraWebhook);
 module.exports = router;

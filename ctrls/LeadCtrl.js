@@ -97,6 +97,72 @@ const handleTiktokWebhook = async (req, res) => {
   }
 };
 
+const handlePluraWebhookV5 = async (req, res) => {
+  try {
+    const lead = req.body;
+    if (!isValidPhone(lead.phone)) {
+      console.log("Invalid phone number. Please enter a valid phone number.");
+      return res.json({
+        status: false,
+        message: "Invalid phone number. Please enter a valid phone number."
+      });
+    } else {
+      try {
+        const { data: result } = await axios.get(`https://api.plura.ai/v1/lead/get?phone=${toE164(lead.phone)}`, {
+          headers: {
+            Authorization: `Bearer ${process.env.PLURA_API_KEY}`
+          }
+        });
+
+        if (result.status !== "failed") {
+          console.log("Phone number already exists");
+          return res.json({
+            status: false,
+            message: "Lead with this phone number already exists."
+          });
+        } else {
+          const { data } = await axios.post(
+            "https://api.plura.ai/v1/lead/sendtoworkflow",
+            {
+              workflow_id: process.env.PLURA_WORKFLOW_ID,
+              record: {
+                ad_id: lead?.ad_id,
+                campaign_id: lead?.campaign_id,
+                first_name: lead?.first_name,
+                phone: toE164(lead?.phone),
+                insured: lead?.insured,
+                created_at: lead?.created_at
+              }
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.PLURA_API_KEY}`
+              }
+            }
+          );
+          console.log("Success===>", data);
+          return res.json({
+            data: data,
+            status: true
+          })
+        }
+      } catch (err) {
+        console.log("Error===>", err);
+        return res.json({
+          status: false,
+          message: err.message
+        });
+      }
+    }
+  } catch (err) {
+    console.log("Error===>", err);
+    return res.json({
+      status: false,
+      message: err.message
+    });
+  }
+} 
+
 const handlePluraWebhook = async (req, res) => {
   return res.json({
     data: req.body,
@@ -106,5 +172,6 @@ const handlePluraWebhook = async (req, res) => {
 
 module.exports = {
   handleTiktokWebhook,
+  handlePluraWebhookV5,
   handlePluraWebhook,
 };
