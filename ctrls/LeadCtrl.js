@@ -188,6 +188,7 @@ const handleTiktokWebhookV6 = async (req, res) => {
             },
           }
         );
+        console.log(result);
         if (result.status !== "failed") {
           console.log("Phone number already exists");
           return res.json({
