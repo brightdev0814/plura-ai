@@ -15,6 +15,15 @@ const toE164 = (phone) => {
   return phone.replace(/\D/g, "");
 };
 
+const getFirstAndLastName = (fullName = "") => {
+  const parts = fullName.trim().split(/\s+/);
+
+  return {
+    first_name: parts[0] || "",
+    last_name: parts.length > 1 ? parts[parts.length - 1] : ""
+  };
+}
+
 const handleTiktokWebhook = async (req, res) => {
   try {
     const lead = req.body;
@@ -188,7 +197,6 @@ const handleTiktokWebhookV6 = async (req, res) => {
             },
           }
         );
-        console.log(result);
         if (result.status !== "failed") {
           console.log("Phone number already exists");
           return res.json({
@@ -196,6 +204,7 @@ const handleTiktokWebhookV6 = async (req, res) => {
             message: "Lead with this phone number already exists.",
           });
         } else {
+          const { first_name, last_name } = getFirstAndLastName(lead?.name);
           const { data } = await axios.post(
             "https://api.plura.ai/v1/lead/sendtoworkflow",
             {
@@ -203,7 +212,8 @@ const handleTiktokWebhookV6 = async (req, res) => {
               record: {
                 ad_id: lead?.ad_id,
                 campaign_id: lead?.campaign_id,
-                name: lead?.name,
+                first_name: first_name,
+                last_name: last_name,
                 email: lead?.email,
                 phone: toE164(lead?.phone),
                 created_at: lead?.created_at
