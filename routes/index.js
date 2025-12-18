@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const LeadCtrl = require("../ctrls/LeadCtrl");
+const CallEventCtrl = require("../ctrls/CallEventCtrl");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -11,4 +12,7 @@ router.post("/tiktok-webhook", LeadCtrl.handleTiktokWebhook);
 router.post("/tiktok-webhook-v5", LeadCtrl.handleTiktokWebhookV5);
 router.post("/tiktok-webhook-v6", LeadCtrl.handleTiktokWebhookV6);
 router.post("/plura-webhook", LeadCtrl.handlePluraWebhook);
+
+router.get("/call-events", CallEventCtrl.fetch);
+router.post("/call-events", CallEventCtrl.create);
 module.exports = router;
