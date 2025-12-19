@@ -14,5 +14,6 @@ router.post("/tiktok-webhook-v6", LeadCtrl.handleTiktokWebhookV6);
 router.post("/plura-webhook", LeadCtrl.handlePluraWebhook);
 
 router.get("/call-events", CallEventCtrl.fetch);
+router.get("/call-events/:id", CallEventCtrl.fetchById);
 router.post("/call-events", CallEventCtrl.create);
 module.exports = router;

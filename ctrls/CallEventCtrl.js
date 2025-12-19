@@ -110,10 +110,13 @@ const fetch = async (req, res) => {
 }
 
 const fetchById = async (req, res) => {
-
+    const { id } = req.params;
+    const event = await CallEvent.findById(id);
+    return res.status(201).json(event);
 }
 
 module.exports = {
     create,
-    fetch
+    fetch,
+    fetchById
 };
