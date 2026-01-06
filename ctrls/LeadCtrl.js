@@ -1,4 +1,5 @@
 const axios = require("axios");
+const Lead = require("../models/Lead");
 
 const isValidEmail = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -84,6 +85,24 @@ const handleTiktokWebhook = async (req, res) => {
               },
             }
           );
+
+          await Lead.create({
+            ad_id: lead?.ad_id,
+            age: lead?.age,
+            campaign_id: lead?.campaign_id,
+            created_at: lead?.created_at,
+            credit_score: lead?.credit_score,
+            email: lead?.email,
+            first_name: lead?.first_name,
+            last_name: lead?.last_name,
+            phone: toE164(lead?.phone),
+            homeowner: lead?.homeowner,
+            insured: lead?.insured,
+            lead_id: lead?.lead_id,
+            tcpa_consent: lead?.tcpa_consent,
+            vehicles: lead?.vehicles,
+            zip_code: lead?.zipcode,
+          });
           console.log("Success===>", data);
           return res.json({
             data: data,
@@ -149,6 +168,24 @@ const handleTiktokWebhookV5 = async (req, res) => {
               }
             }
           );
+
+          await Lead.create({
+            ad_id: lead?.ad_id,
+            age: lead?.age,
+            campaign_id: lead?.campaign_id,
+            created_at: lead?.created_at,
+            credit_score: lead?.credit_score,
+            email: lead?.email,
+            first_name: lead?.first_name,
+            last_name: lead?.last_name,
+            phone: toE164(lead?.phone),
+            homeowner: lead?.homeowner,
+            insured: lead?.insured,
+            lead_id: lead?.lead_id,
+            tcpa_consent: lead?.tcpa_consent,
+            vehicles: lead?.vehicles,
+            zip_code: lead?.zipcode,
+          });
           console.log("Success===>", data);
           return res.json({
             data: data,
@@ -225,6 +262,23 @@ const handleTiktokWebhookV6 = async (req, res) => {
               },
             }
           );
+          await Lead.create({
+            ad_id: lead?.ad_id,
+            age: lead?.age,
+            campaign_id: lead?.campaign_id,
+            created_at: lead?.created_at,
+            credit_score: lead?.credit_score,
+            email: lead?.email,
+            first_name: lead?.first_name,
+            last_name: lead?.last_name,
+            phone: toE164(lead?.phone),
+            homeowner: lead?.homeowner,
+            insured: lead?.insured,
+            lead_id: lead?.lead_id,
+            tcpa_consent: lead?.tcpa_consent,
+            vehicles: lead?.vehicles,
+            zip_code: lead?.zipcode,
+          });
           console.log("Success===>", data);
           return res.json({
             data: data,
